@@ -158,19 +158,23 @@ def key_expansion(key) -> list:
         from_4_rounds_ago = expanded_key[4 * (round_num - 4): 4 * (round_num - 3)]
         prev_round = expanded_key[4 * (round_num-1): 4 * round_num]
         if round_num % 4 == 0:
-            #prev_round = sub(rotation(prev_round))
             prev_round = byte_substitution(rotation(prev_round))
             for i in range(0, 4):
                 tmp[i] = xor(from_4_rounds_ago[i], prev_round[i])
-            #tmp[0] = xor(tmp[0], rc[round_num // 4])
-            tmp[0] = xor(tmp[0], galois28[round_num // 4])
+            tmp[0] = xor(tmp[0], rc(round_num // 4))
         else:
             for i in range(0, 4):
                 tmp[i] = xor(from_4_rounds_ago[i], prev_round[i])
         expanded_key = expanded_key + tmp
         round_num += 1
-    #return key_schedule
     return [expanded_key[i: i+16] for i in range(0, len(expanded_key), 16)]
+
+
+def rc(index):
+    if index <= 1:
+        return 1
+    tmp_num = rc(index-1)
+    return galois28[tmp_num]
 
 
 def add_round_key(state, key_schedule) -> list:
@@ -235,17 +239,30 @@ def mix_column(col):
     return tmp_col
 
 
-def mult(num1, num2):  # Galois zmienic na lookup
-    p = 0x00
-    for i in range(0, 8):
-        if num2 & 1 != 0:
-            p = p ^ num1
-        hi_bit_set = (num1 & 0x80) != 0
-        num1 = num1 << 1;
-        if hi_bit_set:
-            num1 = num1 ^ 0x1b # x^8 + x^4 + x^3 + x + 1
-        num2 = num2 >> 1
-    return p
+# def mult(num2, num1):  # Galois zmienic na lookup
+#     p = 0x00
+#     for i in range(0, 8):
+#         if (num2 & 1) != 0:
+#             p ^= num1
+#
+#         hi_bit_set = (num1 & 0x80) != 0
+#         num1 <<= 1
+#         if hi_bit_set:
+#             num1 = num1 ^ 0x1b  # x^8 + x^4 + x^3 + x + 1
+#         num2 >>= 1
+#     return p
+
+
+def mult(b, a):
+    p = 0
+    hi_bit_set = 0
+    for i in range(8):
+        if b & 1 == 1: p ^= a
+        hi_bit_set = a & 0x80
+        a <<= 1
+        if hi_bit_set == 0x80: a ^= 0x1b
+        b >>= 1
+    return p % 256
 
 
 if __name__ == '__main__':
