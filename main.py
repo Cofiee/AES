@@ -64,7 +64,7 @@ rcon = [0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36]
 
 def main():
     layout = [
-        [sg.Text("klucz:"), sg.InputText(key='key64')],
+        [sg.Text("klucz:"), sg.InputText(key='key32')],
         [sg.Text("wiadomość:"), sg.Multiline(size=(30, 5), key='message')],
         [sg.Text("szyfrogram:")],
         [sg.Multiline(size=(30, 5), key='output', disabled=True)],
@@ -75,20 +75,47 @@ def main():
 
     while True:
         event, values = window.read()
+        #message = "3243F6A8885A308D313198A2E0370734"
+        # message = "Kurwa mac"
+        # key = "2B7E151628AED2A6ABF7158809CF4F3C"
+        # cipher = "1167dc0ae4563b4d6cf096d98ee6e240"
+
         if event == "Szyfruj":
-            encrypt("", "")
+            message = values['message']
+            message = message.lower()
+            message = message.encode().hex()
+            message = fill_blocks_to_32(message)
+            key = values['key32']
+            cipher_ints = encrypt(message, key)
+            cipher_hex_str = bytearray(cipher_ints).hex()
+            window['output'].update(value=cipher_hex_str)
+            #debug
+
         elif event == "Odszyfruj":
-            decrypt("")
+            cipher = values['message']
+            cipher = cipher.lower()
+            key = values['key32']
+            plain_text_ints = decrypt(cipher, key)
+            plain_text_hex_str = bytearray(plain_text_ints).hex()
+            plain_text = bytes.fromhex(plain_text_hex_str).decode("ascii")
+            window['output'].update(value=plain_text)
+
         elif event == "Wyczyśc":
             pass
         elif event == sg.WIN_CLOSED:
             break
 
 
+def fill_blocks_to_32(message):
+    if diff := len(message) % 32:
+        message += '20' * ((32 - diff) // 2) # fill spaces
+    return message
+
+
 def encrypt(message: str, key: str) -> str:
     # debug
-    message = "3243F6A8885A308D313198A2E0370734"
-    key = "2B7E151628AED2A6ABF7158809CF4F3C"
+    # message = "3243F6A8885A308D313198A2E0370734"
+    # key = "2B7E151628AED2A6ABF7158809CF4F3C"
 
     state = initialize_state(message)
     print("Initialize matrix: ")
@@ -132,9 +159,9 @@ def encrypt(message: str, key: str) -> str:
     return state
 
 
-def decrypt(cipher):
-    cipher = "373837cca0140f8a9cc15d3899e0aa9d".upper()
-    key = "2B7E151628AED2A6ABF7158809CF4F3C"
+def decrypt(cipher, key):
+    # cipher = "373837cca0140f8a9cc15d3899e0aa9d".upper()
+    # key = "2B7E151628AED2A6ABF7158809CF4F3C"
 
     state = initialize_state(cipher)
     key_schedule = key_expansion(key)
