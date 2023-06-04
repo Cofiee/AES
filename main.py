@@ -83,27 +83,66 @@ def main():
         if event == "Szyfruj":
             message = values['message']
             message = message.lower()
-            message = message.encode().hex()
+            message = message.encode("ascii").hex()
             message = fill_blocks_to_32(message)
+
             key = values['key32']
-            cipher_ints = encrypt(message, key)
-            cipher_hex_str = bytearray(cipher_ints).hex()
+            if len(key) != 32:
+                sg.popup("Klucz nie jest długości 32. Niemożliwe odszyfrowanie.")
+                continue
+
+            if not is_hexadecimal(key):
+                sg.popup("Klucz nie jest w formacie hexadecymalnym. Niemożliwe odszyfrowanie.")
+                continue
+            cipher_hex_str = ""
+            for i in range(0, len(message), 32):
+                cipher_ints = encrypt(message[i: i+32], key)
+                cipher_hex_str += bytearray(cipher_ints).hex()
+
             window['output'].update(value=cipher_hex_str)
             #debug
 
         elif event == "Odszyfruj":
             cipher = values['message']
             cipher = cipher.lower()
+            if (len(cipher) % 32) != 0:
+                sg.popup("Szyfrogram nie jest długości n * 32. Niemożliwy podział na bloki.")
+                continue
+
+            if not is_hexadecimal(cipher):
+                sg.popup("Szyfrogram nie jest w formacie hexadecymalnym. Niemożliwe odszyfrowanie.")
+                continue
+
             key = values['key32']
-            plain_text_ints = decrypt(cipher, key)
-            plain_text_hex_str = bytearray(plain_text_ints).hex()
+            if len(key) != 32:
+                sg.popup("Klucz nie jest długości 32. Niemożliwe odszyfrowanie.")
+                continue
+
+            if not is_hexadecimal(key):
+                sg.popup("Klucz nie jest w formacie hexadecymalnym. Niemożliwe odszyfrowanie.")
+                continue
+            plain_text_hex_str = ""
+            for i in range(0, len(cipher), 32):
+                plain_text_ints = decrypt(cipher[i:i+32], key)
+                plain_text_hex_str += bytearray(plain_text_ints).hex()
             plain_text = bytes.fromhex(plain_text_hex_str).decode("ascii")
             window['output'].update(value=plain_text)
 
-        elif event == "Wyczyśc":
-            pass
+        elif event == "Wyczyść":
+            window["key32"].update(value="")
+            window["message"].update(value="")
+            window["output"].update(value="")
+
         elif event == sg.WIN_CLOSED:
             break
+
+
+def is_hexadecimal(cipher):
+    try:
+        int(cipher, 16)
+        return True
+    except:
+        return False
 
 
 def fill_blocks_to_32(message):
