@@ -1,26 +1,59 @@
-from main import sbox, byte_substitution, rotation, xor, galois28, rcon
+from main import sbox, byte_substitution, rotation, xor, galois28, rcon, initialize_state, shift_rows, inv_shift_rows, inv_mix_column
 
 def main():
-    # col = [219, 19, 83, 69]
-    # col2 = [242, 10, 34, 92]
-    # col3 = [1, 1, 1, 1]
-    # col4 = [198, 198, 198, 198]
-    # col5 = [212, 212, 212, 213]
-    # col6 = [45, 38, 49, 76]
+    # message = "3243F6A8885A308D313198A2E0370734"
+    # key = "2B7E151628AED2A6ABF7158809CF4F3C"
     #
-    # col7 = [212, 224, 184, 30]
-    # print(mix_column(col))
-    # print(mix_column(col2))
-    # print(mix_column(col3))
-    # print(mix_column(col4))
-    # print(mix_column(col5))
-    # print(mix_column(col6))
+    # state = initialize_state(message)
+    # print(state)
+    # state2 = shift_rows(state)
+    # print(state2)
+    # state2 = inv_shift_rows(state2)
+    # print(state2)
+
+    col = [219, 19, 83, 69]
+    col2 = [242, 10, 34, 92]
+    col3 = [1, 1, 1, 1]
+    col4 = [198, 198, 198, 198]
+    col5 = [212, 212, 212, 213]
+    col6 = [45, 38, 49, 76]
+
+    #col7 = [212, 224, 184, 30]
+    out = mix_column(col)
+    print(out)
+    out2 = inv_mix_column(out)
+    print(out2)
+    print("")
+    out = mix_column(col2)
+    print(out)
+    out2 = inv_mix_column(out)
+    print(out2)
+    print("")
+    out = mix_column(col3)
+    print(out)
+    out2 = inv_mix_column(out)
+    print(out2)
+    print("")
+    out = mix_column(col4)
+    print(out)
+    out2 = inv_mix_column(out)
+    print(out2)
+    print("")
+    out = mix_column(col5)
+    print(out)
+    out2 = inv_mix_column(out)
+    print(out2)
+    print("")
+    out = mix_column(col6)
+    print(out)
+    out2 = inv_mix_column(out)
+    print(out2)
+    print("")
     # state = mix_column(col7)
     # print([hex(i) for i in state])
-    key = "2B7E151628AED2A6ABF7158809CF4F3C"
-    exp_keys = key_expansion(key)
-    for key in exp_keys:
-        print([hex(i) for i in key])
+    # exp_keys = key_expansion(key)
+    # for key in exp_keys:
+    #     print([hex(i) for i in key])
 
 def rc(index):
     if index <= 1:
